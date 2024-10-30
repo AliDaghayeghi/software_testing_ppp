@@ -305,7 +305,7 @@ public class OrderServiceTests
             Id = Guid.NewGuid().ToString(),
             StoreId = Guid.NewGuid().ToString(),
             CustomerId = Guid.NewGuid().ToString(),
-            DiscountCode = "DISCOUNT123",
+            DiscountCode = "AD-Test-Discount-Code",
             Products =
             [
                 new ProductRequestItem
