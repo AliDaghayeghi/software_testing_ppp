@@ -192,20 +192,153 @@ public class OrderServiceTests
     [Fact]
     public void Order_is_created_only_for_active_store()
     {
+        // Arrange
+        var request = new CreateOrderRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            StoreId = Guid.NewGuid().ToString(),
+            CustomerId = Guid.NewGuid().ToString(),
+            Products =
+            [
+                new ProductRequestItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Quantity = 1
+                }
+            ]
+        };
+
+        var store = new Store
+        {
+            Id = request.StoreId, 
+            IsActive = false
+        };
+        _storeRepository.GetBy(request.StoreId).Returns(store);
+
+        var customer = new Customer
+        {
+            Id = request.CustomerId, 
+            IsActive = true
+        };
+        _customerRepository.GetBy(request.CustomerId).Returns(customer);
+
+        // Act & Assert
+        Assert.Throws<Exception>(() => _sut.CreateOrder(request))
+            .Message.Should().Be("Store is deActivated");
     }
 
     [Fact]
     public void Order_is_created_only_for_active_customer()
     {
+        // Arrange
+        var request = new CreateOrderRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            StoreId = Guid.NewGuid().ToString(),
+            CustomerId = Guid.NewGuid().ToString(),
+            Products =
+            [
+                new ProductRequestItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Quantity = 1
+                }
+            ]
+        };
+
+        var store = new Store
+        {
+            Id = request.StoreId, 
+            IsActive = true
+        };
+        _storeRepository.GetBy(request.StoreId).Returns(store);
+
+        var customer = new Customer
+        {
+            Id = request.CustomerId, 
+            IsActive = false
+        };
+        _customerRepository.GetBy(request.CustomerId).Returns(customer);
+
+        // Act & Assert
+        Assert.Throws<Exception>(() => _sut.CreateOrder(request))
+            .Message.Should().Be("Customer is deActivated");
     }
 
     [Fact]
     public void Order_is_created_with_atLeast_one_product()
     {
+        // Arrange
+        var request = new CreateOrderRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            StoreId = Guid.NewGuid().ToString(),
+            CustomerId = Guid.NewGuid().ToString(),
+            Products = new List<ProductRequestItem>()
+        };
+
+        var store = new Store
+        {
+            Id = request.StoreId, 
+            IsActive = true
+        };
+        _storeRepository.GetBy(request.StoreId).Returns(store);
+
+        var customer = new Customer
+        {
+            Id = request.CustomerId, 
+            IsActive = true
+        };
+        _customerRepository.GetBy(request.CustomerId).Returns(customer);
+
+        // Act & Assert
+        Assert.Throws<Exception>(() => _sut.CreateOrder(request))
+            .Message.Should().Be("AtLeast one product is required.");
     }
 
     [Fact]
     public void Order_is_created_having_only_active_discountCode()
     {
+        // Arrange
+        var request = new CreateOrderRequest
+        {
+            Id = Guid.NewGuid().ToString(),
+            StoreId = Guid.NewGuid().ToString(),
+            CustomerId = Guid.NewGuid().ToString(),
+            DiscountCode = "DISCOUNT123",
+            Products =
+            [
+                new ProductRequestItem
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Quantity = 1
+                }
+            ]
+        };
+
+        var store = new Store
+        {
+            Id = request.StoreId, 
+            IsActive = true
+        };
+        _storeRepository.GetBy(request.StoreId).Returns(store);
+
+        var customer = new Customer
+        {
+            Id = request.CustomerId, 
+            IsActive = true
+        };
+        _customerRepository.GetBy(request.CustomerId).Returns(customer);
+
+        var discount = new Discount
+        {
+            Code = request.DiscountCode, 
+            IsActive = false
+        };
+        _discountRepository.GetBy(request.DiscountCode).Returns(discount);
+
+        // Act & Assert
+        Assert.Throws<Exception>(() => _sut.CreateOrder(request))
+            .Message.Should().Be("Invalid discount code");
     }
 }
